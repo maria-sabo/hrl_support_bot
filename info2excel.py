@@ -3,14 +3,27 @@ from db_requests import select_documents, select_employees, select_users
 from user import User
 
 import pandas as pd
+from xlsxwriter import Workbook
 
 
 def select_documents2excel(tenant_db, path2file):
+    """
+
+    :param tenant_db:
+    :param path2file:
+    :return:
+    """
     df = pd.DataFrame(select_documents(tenant_db[0]), columns=config.documents_excel_columns)
     df.to_excel(path2file)
 
 
 def select_employees2excel(tenant_db, path2file):
+    """
+
+    :param tenant_db:
+    :param path2file:
+    :return:
+    """
     df = pd.DataFrame(select_employees(tenant_db[0]), columns=config.employees_excel_columns)
 
     user_data = select_users(tenant_db[1])
@@ -50,4 +63,14 @@ def select_employees2excel(tenant_db, path2file):
     df['Подтверждён?'] = user_confirmed2excel
 
     df.sort_values(['ФИО'], inplace=True)
-    df.to_excel(path2file)
+    df.to_excel(path2file, index=False)
+
+    # workbook = Workbook(path2file)
+    # worksheet = workbook.add_worksheet()
+    #
+    # writer = pd.ExcelWriter(path2file, engine='xlsxwriter')
+    # df.to_excel(writer, index=False, sheet_name='report')
+    #
+    # worksheet = writer.sheets['report']
+    # worksheet.set_column('B:D', 20)
+

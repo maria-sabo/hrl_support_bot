@@ -1,12 +1,10 @@
 import os
-
 import sshtunnel
 
+import telebot
 from telebot import types
 
 import config
-import telebot
-
 from db_requests import select_host
 from info2excel import select_documents2excel, select_employees2excel
 
@@ -21,11 +19,21 @@ main_keyboard.row('Отчёт по пользователям', 'Отчёт по
 
 @bot.message_handler(commands=['start'], func=lambda message: message.chat.id in config.users)
 def start_message(message):
+    """
+
+    :param message:
+    :return:
+    """
     bot.send_message(message.chat.id, 'Привет! Я бот HR-Link! Добро пожаловать!', reply_markup=initial_keyboard)
 
 
 @bot.message_handler(content_types=['text'], func=lambda message: message.chat.id in config.users)
 def send_text(message):
+    """
+
+    :param message:
+    :return:
+    """
     if message.text.lower() == 'выбор тенанта':
         bot.send_message(message.chat.id, 'Введите домен тенанта (без .hr-link.ru):',
                          reply_markup=types.ReplyKeyboardRemove())
@@ -36,6 +44,11 @@ def send_text(message):
 
 @bot.message_handler(func=lambda message: message.chat.id in config.users)
 def check_tenant(message: types.Message):
+    """
+
+    :param message:
+    :return:
+    """
     try:
         host = message.text
         tenant_databases = select_host(host)
@@ -52,9 +65,15 @@ def check_tenant(message: types.Message):
 
 @bot.message_handler(func=lambda message: message.chat.id in config.users)
 def action(message, tenant_databases):
+    """
+
+    :param message:
+    :param tenant_databases:
+    :return:
+    """
     try:
         if message.text.lower() == 'отчёт по пользователям':
-            path2file = r'C:\Users\Maria\PycharmProjects\hrl_support_bot\employee_report_' + str(
+            path2file = '/home/maria/PycharmProjects/hrl_support_bot/tmp_xlsx/employee_report_' + str(
                 message.chat.id) + '.xlsx'
             select_employees2excel(tenant_databases, path2file)
             f = open(path2file, 'rb')
@@ -63,7 +82,7 @@ def action(message, tenant_databases):
             os.remove(path2file)
             bot.register_next_step_handler(message, action, tenant_databases)
         elif message.text.lower() == 'отчёт по документам':
-            path2file = r'C:\Users\Maria\PycharmProjects\hrl_support_bot\documents_report_' + str(
+            path2file = '/home/maria/PycharmProjects/hrl_support_bot/tmp_xlsx/documents_report_' + str(
                 message.chat.id) + '.xlsx'
             select_documents2excel(tenant_databases, path2file)
             f = open(path2file, 'rb')
@@ -91,6 +110,6 @@ if __name__ == '__main__':
         server.start()
         while True:
             try:
-                bot.infinity_polling()
+                bot.polling(none_stop=True)
             except Exception:
                 pass
